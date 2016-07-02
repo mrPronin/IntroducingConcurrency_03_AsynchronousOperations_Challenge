@@ -14,14 +14,24 @@ let input = [(1,5), (5,8), (6,1), (3,9), (6,12), (1,0)]
 //: > __Note:__ Use an operation queue and an operation for each element of the arrays. The results are likely to be returned out of order. That's fine!
 
 class SumOperation: ConcurrentOperation {
-  
-  init(lhs: Int, rhs: Int) {
-    super.init()
-  }
-  
-  override func main() {
-
-  }
+    
+    let lhs: Int
+    let rhs: Int
+    var output: Int?
+    
+    init(lhs: Int, rhs: Int) {
+        self.lhs = lhs
+        self.rhs = rhs
+        super.init()
+    }
+    
+    override func main() {
+        asyncAdd(lhs, rhs: rhs) {
+            result in
+            self.output = result
+            self.state = .Finished
+        }
+    }
 }
 
 //: Create the queue
@@ -29,12 +39,12 @@ let queue = NSOperationQueue()
 
 //: Add all the summation operations
 for (lhs, rhs) in input {
-  let operation = SumOperation(lhs: lhs, rhs: rhs)
-  operation.completionBlock = {
-
-    print("\(lhs) + \(rhs) = ????")
-  }
-  queue.addOperation(operation)
+    let operation = SumOperation(lhs: lhs, rhs: rhs)
+    operation.completionBlock = {
+        guard let result = operation.output else { return }
+        print("\(lhs) + \(rhs) = \(result)")
+    }
+    queue.addOperation(operation)
 }
 
 
